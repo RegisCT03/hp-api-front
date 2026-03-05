@@ -1,16 +1,18 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --hp-red: #5e1919;
-  --hp-gold: #c7991e;
-  --hp-brown: #3b2f24;
-  --hp-grey: #72777a;
-  --hp-white: #eceae4;
+@theme {
+  --color-hp-red: #5e1919;
+  --color-hp-gold: #c7991e;
+  --color-hp-brown: #3b2f24;
+  --color-hp-grey: #72777a;
+  --color-hp-white: #eceae4;
 }
 
-body {
-  background-color: var(--hp-white);
-  color: var(--hp-brown);
+@layer base {
+  body {
+    background-color: black;
+    color: white;
+    margin: 0;
+    padding: 0;
+  }
 }
