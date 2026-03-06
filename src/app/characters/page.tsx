@@ -16,9 +16,9 @@ export default function CharactersPage() {
 
   useEffect(() => {
     setLoading(true);
-    let endpoint = 'http://localhost:4000/api/characters';
+    let endpoint = `${process.env.NEXT_PUBLIC_GATEWAY_API}/api/characters`;
     if (house !== 'all') {
-      endpoint = `http://localhost:4000/api/house/${house}`;
+      endpoint = `${process.env.NEXT_PUBLIC_GATEWAY_API}/api/house/${house}`;
     }
 
     fetch(endpoint)
@@ -69,6 +69,7 @@ export default function CharactersPage() {
             className="bg-black border-2 border-white/20 text-white px-4 py-2 font-bold uppercase text-xs focus:border-hp-gold outline-none transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            suppressHydrationWarning={true}
           />
         </div>
 
