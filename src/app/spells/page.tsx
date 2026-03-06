@@ -1,10 +1,12 @@
 "use client";
+import { Spell } from '../../types/interfaces'; 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function SpellsPage() {
-  const [spells, setSpells] = useState([]);
+  const [spells, setSpells] = useState<Spell[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,21 +18,25 @@ export default function SpellsPage() {
   useEffect(() => {
     setLoading(true);
     fetch(`${process.env.NEXT_PUBLIC_GATEWAY_API}/api/spells`)
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) throw new Error("No se pudieron descifrar los pergaminos");
+        return res.json();
+      })
       .then(data => {
         let filtered = data;
-        
         if (searchTerm) {
-          filtered = data.filter((s: any) => 
+          filtered = data.filter((s: Spell) => 
             s.name.toLowerCase().includes(searchTerm.toLowerCase())
           );
         }
-        
         setSpells(filtered);
         setLoading(false);
         setCurrentPage(1);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, [searchTerm]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -62,10 +68,20 @@ export default function SpellsPage() {
 
       {loading ? (
         <div className="text-hp-gold text-center font-black animate-pulse py-20 tracking-widest text-xl uppercase">Descifrando Pergaminos...</div>
+      ) : error ? (
+        <div className="text-center py-20 border-2 border-dashed border-hp-gold/20 rounded-xl">
+           <p className="text-hp-gold font-black text-xl">{error}</p>
+        </div>
+      ) : spells.length === 0 ? (
+        <div className="text-center py-32 bg-white/5 border border-white/10 rounded-lg">
+          <div className="text-4xl mb-6 opacity-20">🪄</div>
+          <p className="text-hp-gold font-black text-xl mb-2 uppercase tracking-widest">Hechizo no encontrado</p>
+          <p className="text-white/40 text-[10px] uppercase tracking-[0.2em]">Intenta con otro nombre de encantamiento</p>
+        </div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentItems.map((spell: any) => (
+            {currentItems.map((spell: Spell) => (
               <div key={spell.id} className="bg-white/5 border border-white/10 p-6 hover:border-hp-gold transition-all group flex flex-col justify-between">
                 <div>
                   <div className="flex justify-between items-start mb-4">

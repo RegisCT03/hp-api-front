@@ -34,23 +34,6 @@ export default function LandingPage() {
           Explora la base de datos oficial del Colegio Hogwarts de Magia y Hechicería. 
           Consulta registros de estudiantes, personal y encantamientos.
         </p>
-
-        <form onSubmit={onSearch} className="flex w-full max-w-md shadow-2xl border border-white/20">
-          <input 
-            type="text" 
-            placeholder="Busca un personaje..." 
-            className="flex-1 p-5 bg-black/40 backdrop-blur-md text-white outline-none focus:bg-black/60 transition-all placeholder:text-white/40"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            suppressHydrationWarning={true}
-          />
-          <button 
-            type="submit" 
-            className="bg-hp-gold hover:bg-white text-hp-brown px-10 font-black uppercase transition-all active:scale-95"
-          >
-            BUSCAR
-          </button>
-        </form>
       </div>
     </main>
   );

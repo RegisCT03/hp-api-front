@@ -1,10 +1,12 @@
 "use client";
+import { Character } from '../../types/interfaces'; 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function CharactersPage() {
-  const [characters, setCharacters] = useState([]);
+  const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   const [house, setHouse] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -16,24 +18,32 @@ export default function CharactersPage() {
 
   useEffect(() => {
     setLoading(true);
+    setError(null);
+
     let endpoint = `${process.env.NEXT_PUBLIC_GATEWAY_API}/api/characters`;
     if (house !== 'all') {
       endpoint = `${process.env.NEXT_PUBLIC_GATEWAY_API}/api/house/${house}`;
     }
 
     fetch(endpoint)
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || "No se pudo conectar con el Gran Comedor");
+        }
+        return res.json();
+      })
       .then(data => {
         let filtered = data;
         
         if (roleFilter === 'student') {
-          filtered = data.filter((c: any) => c.hogwartsStudent === true);
+          filtered = data.filter((c: Character) => c.hogwartsStudent === true);
         } else if (roleFilter === 'staff') {
-          filtered = data.filter((c: any) => c.hogwartsStaff === true);
+          filtered = data.filter((c: Character) => c.hogwartsStaff === true);
         }
 
         if (searchTerm) {
-          filtered = filtered.filter((c: any) => 
+          filtered = filtered.filter((c: Character) => 
             c.name.toLowerCase().includes(searchTerm.toLowerCase())
           );
         }
@@ -42,7 +52,10 @@ export default function CharactersPage() {
         setLoading(false);
         setCurrentPage(1);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, [house, roleFilter, searchTerm]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -103,11 +116,27 @@ export default function CharactersPage() {
       </div>
 
       {loading ? (
-        <div className="text-hp-gold text-center font-black animate-pulse py-20 tracking-widest text-xl">PROCESANDO ARCHIVOS...</div>
+        <div className="text-hp-gold text-center font-black animate-pulse py-20 tracking-widest text-xl uppercase">Procesando Archivos...</div>
+      ) : error ? (
+        <div className="text-center py-20 bg-hp-red/5 border-2 border-dashed border-hp-red/30 rounded-xl">
+            <p className="text-hp-red font-black text-xl mb-2 uppercase">Error de Conexión</p>
+            <p className="text-white/60 text-xs uppercase tracking-widest">{error}</p>
+        </div>
+      ) : characters.length === 0 ? (
+        <div className="text-center py-32 border-2 border-dashed border-white/10 rounded-xl">
+          <p className="text-hp-gold font-black text-2xl mb-4 uppercase tracking-tighter italic">"Parece que este registro ha sido borrado por un encantamiento Obliviate"</p>
+          <p className="text-white/40 uppercase text-[10px] tracking-[0.3em]">No se encontraron personajes con los filtros actuales</p>
+          <button 
+            onClick={() => {setSearchTerm(''); setHouse('all'); setRoleFilter('all');}}
+            className="mt-8 text-xs font-bold text-white border-b border-hp-gold pb-1 hover:text-hp-gold transition-all"
+          >
+            LIMPIAR FILTROS
+          </button>
+        </div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {currentItems.map((char: any) => (
+            {currentItems.map((char: Character) => (
               <div key={char.id} className="bg-white/5 border border-white/10 p-5 hover:border-hp-gold transition-all group">
                 <div className="h-64 overflow-hidden mb-4 relative">
                   <img 
